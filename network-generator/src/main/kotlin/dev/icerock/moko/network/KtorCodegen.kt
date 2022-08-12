@@ -11,15 +11,14 @@ import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.servers.Server
 import org.apache.commons.lang3.StringUtils
-import org.openapitools.codegen.CodegenConstants
-import org.openapitools.codegen.CodegenModel
-import org.openapitools.codegen.CodegenOperation
-import org.openapitools.codegen.CodegenProperty
-import org.openapitools.codegen.CodegenType
+import org.openapitools.codegen.*
 import org.openapitools.codegen.config.GlobalSettings
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 @Suppress("TooManyFunctions")
 class KtorCodegen : AbstractKotlinCodegen() {
@@ -74,7 +73,6 @@ class KtorCodegen : AbstractKotlinCodegen() {
                 getOrGenerateOperationId(operation, path, method)
             }.also { addProcessor(it) }
         }
-
         GlobalSettings.setProperty(CodegenConstants.SKIP_FORM_MODEL, "false")
     }
 
@@ -196,7 +194,45 @@ class KtorCodegen : AbstractKotlinCodegen() {
             codegenOperation.vendorExtensions["x-successResponse"] = successResponse
         }
 
+        // fix query
+        codegenOperation
+            .queryParams
+            .filter {
+                it.baseName == "..." && it.isQueryParam
+            }
+            .forEach { param ->
+                val p: Pattern = Pattern.compile("^Schema: \\[\\`([a-zA-Z0-9]+)\\`\\]")
+                val m: Matcher = p.matcher(param.description)
+                if (m.find()) {
+                    val nestedSchema = openAPI.components.schemas[m.group(1)]
+                    if (nestedSchema != null) {
+                        codegenOperation.parseNestedObjects(
+                            param.baseName,
+                            nestedSchema,
+                            this,
+                            imports,
+                            openAPI
+                        )
+                    }
+                }
+            }
+
+        codegenOperation.queryParams.removeAll {
+            it.isQueryParam && it.baseName == "..."
+        }
+
+        codegenOperation.allParams.removeAll {
+            it.isQueryParam && it.baseName == "..."
+        }
+
         return codegenOperation
+    }
+
+    override fun fromParameter(
+        parameter: Parameter?,
+        imports: MutableSet<String>?
+    ): CodegenParameter {
+        return super.fromParameter(parameter, imports)
     }
 
     override fun fromProperty(name: String?, schema: Schema<*>?): CodegenProperty {
