@@ -40,21 +40,19 @@ class KtorCodegen : AbstractKotlinCodegen() {
         typeMapping["Date"] = "kotlin.String"
         typeMapping["DateTime"] = "kotlin.String"
 
-        @Suppress("ForbiddenComment")
-        // TODO: Support files via ByteArray / LargeTextContent
-        typeMapping["File"] = "kotlin.String"
-        typeMapping["file"] = "kotlin.String"
-
         typeMapping["UUID"] = "kotlin.String"
         typeMapping["URI"] = "kotlin.String"
         typeMapping["object"] = "JsonObject"
         typeMapping["decimal"] = "BigNum"
         typeMapping[ONE_OF_REPLACE_TYPE_NAME] = "JsonElement"
         typeMapping["AnyType"] = "JsonElement"
+        typeMapping.remove("file")
+
 
         importMapping["JsonObject"] = "kotlinx.serialization.json.JsonObject"
         importMapping["JsonElement"] = "kotlinx.serialization.json.JsonElement"
         importMapping["BigNum"] = "com.soywiz.kbignum.BigNum"
+        importMapping.remove("File")
 
         embeddedTemplateDir = "kotlin-ktor-client"
 

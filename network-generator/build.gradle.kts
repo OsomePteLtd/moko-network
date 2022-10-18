@@ -5,6 +5,7 @@
 plugins {
     id("com.gradle.plugin-publish") version ("0.15.0")
     id("java-gradle-plugin")
+    id("maven-publish")
 }
 
 buildscript {
@@ -77,5 +78,18 @@ pluginBundle {
         groupId = project.group as String
         artifactId = project.name
         version = project.version as String
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared/")
+            credentials {
+//                username = ""
+//                password = ""
+            }
+        }
     }
 }
