@@ -238,6 +238,8 @@ class KtorCodegen : AbstractKotlinCodegen() {
         if (schema?.format?.equals("decimal") == true) {
             property.isDecimal = true
         }
+        property.isNullable = true
+        property.required = false
 
         return property
     }
