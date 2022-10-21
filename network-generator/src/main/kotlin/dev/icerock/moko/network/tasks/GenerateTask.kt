@@ -22,7 +22,8 @@ open class GenerateTask : GenerateTask() {
             KtorCodegen.ADDITIONAL_OPTIONS_KEY_IS_INTERNAL to "${specInfo.isInternal}",
             KtorCodegen.ADDITIONAL_OPTIONS_KEY_IS_OPEN to "${specInfo.isOpen}",
             KtorCodegen.ADDITIONAL_OPTIONS_KEY_EXCLUDED_TAGS to excludedTags,
-            KtorCodegen.ADDITIONAL_OPTIONS_KEY_ENUM_FALLBACK_NULL to "${specInfo.enumFallbackNull}"
+            KtorCodegen.ADDITIONAL_OPTIONS_KEY_ENUM_FALLBACK_NULL to "${specInfo.enumFallbackNull}",
+            KtorCodegen.ADDITIONAL_OPTIONS_KEY_USE_NULLABLE to false
         )
         additionalProperties.set(props)
 

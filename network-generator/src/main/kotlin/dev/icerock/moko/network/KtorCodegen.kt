@@ -12,6 +12,7 @@ import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.parameters.Parameter
+import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.servers.Server
 import org.apache.commons.lang3.StringUtils
 import org.openapitools.codegen.*
@@ -90,6 +91,12 @@ class KtorCodegen : AbstractKotlinCodegen() {
         if (enumFallbackNullProp is String) {
             additionalProperties[ADDITIONAL_OPTIONS_KEY_ENUM_FALLBACK_NULL] =
                 enumFallbackNullProp == "true"
+        }
+
+        val useNullableProp = additionalProperties[ADDITIONAL_OPTIONS_KEY_USE_NULLABLE]
+        if (useNullableProp is String) {
+            additionalProperties[ADDITIONAL_OPTIONS_KEY_USE_NULLABLE] =
+                useNullableProp == "true"
         }
     }
 
@@ -238,8 +245,18 @@ class KtorCodegen : AbstractKotlinCodegen() {
         if (schema?.format?.equals("decimal") == true) {
             property.isDecimal = true
         }
-        property.isNullable = true
-        property.required = false
+
+        if (property.required) {
+            property.required = false
+            property.isNullable = true
+            property.setDefaultValue(null)
+        }
+
+        if (!property.isNullable) {
+            property.required = false
+            property.isNullable = true
+            property.setDefaultValue(null)
+        }
 
         return property
     }
@@ -298,7 +315,7 @@ class KtorCodegen : AbstractKotlinCodegen() {
         const val ADDITIONAL_OPTIONS_KEY_IS_OPEN = "isOpen"
         const val ADDITIONAL_OPTIONS_KEY_IS_INTERNAL = "nonPublicApi"
         const val ADDITIONAL_OPTIONS_KEY_ENUM_FALLBACK_NULL = "isEnumFallbackNull"
-
+        const val ADDITIONAL_OPTIONS_KEY_USE_NULLABLE = "useNullable"
         private const val ONE_OF_REPLACE_TYPE_NAME = "oneOfElement"
     }
 }
