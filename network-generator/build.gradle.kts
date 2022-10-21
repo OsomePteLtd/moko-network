@@ -87,8 +87,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared/")
             credentials {
-//                username = ""
-//                password = ""
+                username = "youndie"
+                password = "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"
             }
         }
     }
