@@ -296,13 +296,7 @@ class KtorCodegen : AbstractKotlinCodegen() {
                 val schema = response.schema as Schema<*>
                 val inline = schema.`$ref`.split("/").last()
                 schema.`$ref` = schema.`$ref`.replace(inline, response.baseType)
-                println("from response $schema")
             }
-//            val schema = response.schema as Schema<*>
-//            val inline = schema.`$ref`.split("/").last()
-//            val newName = camelize(inlineNameCache[inline]).replace("{", "").replace("}", "") + "InlineResponse"
-//
-//
         }
         return response
     }
