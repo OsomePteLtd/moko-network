@@ -12,12 +12,15 @@ import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.parameters.Parameter
+import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.servers.Server
 import org.apache.commons.lang3.StringUtils
+import org.gradle.configurationcache.extensions.capitalized
 import org.openapitools.codegen.*
 import org.openapitools.codegen.config.GlobalSettings
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.openapitools.codegen.utils.StringUtils.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -127,6 +130,34 @@ class KtorCodegen : AbstractKotlinCodegen() {
 
         val schemas: MutableMap<String, Schema<*>> = openAPI.components.schemas
 
+        //fix inline
+        openAPI.paths
+            .flatMap { (pathName, path) ->
+                path.readOperations()
+                    .filter {
+                        it.requestBody != null
+                    }.map {
+                        pathName to it.requestBody
+                    }
+            }.forEach {
+                describeRequestBody(it.first, it.second)
+            }
+
+        openAPI.paths.forEach { (pathName, path) ->
+            path.readOperations().forEach {
+                it.responses?.forEach { (name, response) ->
+                    if (response.toString().contains("inline")) {
+                        response.content["application/json"]?.let {
+                            val newName = camelize(pathName).replace("{", "").replace("}", "") + "InlineResponse"
+                            val inline = it.schema.`$ref`.split("/").last()
+                            inlineNameCache[inline] = newName
+                            //    it.schema.`$ref` = it.schema.`$ref`.replace(inline, newName)
+                        }
+                    }
+                }
+            }
+        }
+
         openAPI.components?.requestBodies?.forEach { (requestBodyName, requestBody) ->
             val jsonContent: MediaType? = requestBody.content["application/json"]
             if (jsonContent == null) return@forEach
@@ -233,13 +264,6 @@ class KtorCodegen : AbstractKotlinCodegen() {
         return codegenOperation
     }
 
-    override fun fromParameter(
-        parameter: Parameter?,
-        imports: MutableSet<String>?
-    ): CodegenParameter {
-        return super.fromParameter(parameter, imports)
-    }
-
     override fun fromProperty(name: String?, schema: Schema<*>?): CodegenProperty {
         val property = super.fromProperty(name, schema)
         if (schema?.format?.equals("decimal") == true) {
@@ -261,6 +285,28 @@ class KtorCodegen : AbstractKotlinCodegen() {
         return property
     }
 
+    private val inlineNameCache = mutableMapOf<String, String>()
+
+    override fun fromResponse(responseCode: String?, response: ApiResponse?): CodegenResponse {
+        val response = super.fromResponse(responseCode, response)
+        if (response.toString().contains("inline")) {
+            if (response.baseType in inlineNameCache.keys.map(::camelize)) {
+                response.baseType = inlineNameCache.map { camelize(it.key) to it.value }.toMap()[response.baseType]
+                response.dataType = response.baseType
+                val schema = response.schema as Schema<*>
+                val inline = schema.`$ref`.split("/").last()
+                schema.`$ref` = schema.`$ref`.replace(inline, response.baseType)
+                println("from response $schema")
+            }
+//            val schema = response.schema as Schema<*>
+//            val inline = schema.`$ref`.split("/").last()
+//            val newName = camelize(inlineNameCache[inline]).replace("{", "").replace("}", "") + "InlineResponse"
+//
+//
+        }
+        return response
+    }
+
     override fun fromModel(name: String?, schema: Schema<*>?): CodegenModel {
         val model = super.fromModel(name, schema)
         model.vars.forEach {
@@ -268,11 +314,38 @@ class KtorCodegen : AbstractKotlinCodegen() {
                 model.imports.add("dev.icerock.moko.network.bignum.BigNumSerializer")
             }
         }
+
+        if (model.name.contains("inline_response")) {
+            val inline = model.name
+            model.name = inlineNameCache[inline]
+            model.classVarName = model.name
+            model.classname = model.name
+            model.classFilename = model.name
+
+            schema?.`$ref` = schema?.`$ref`?.replace(inline, model.name)
+
+            return model
+        }
+
+        if (model.name.contains("inline_object")) {
+            val varsName = camelize(schema?.description).replace("{", "").replace("}", "") + "InlineObject"
+            inlineNameCache[model.name] = varsName
+
+            model.name = varsName
+            model.classVarName = varsName
+            model.classname = varsName
+            model.classFilename = varsName
+        }
+
         return model
     }
 
     override fun getEnumPropertyNaming(): CodegenConstants.ENUM_PROPERTY_NAMING_TYPE {
         return CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.UPPERCASE
+    }
+
+    override fun modelFilename(templateName: String?, modelName: String?): String {
+        return super.modelFilename(templateName, inlineNameCache[modelName] ?: modelName)
     }
 
     private fun filterPaths(paths: Paths?, pathOperationsFilterSet: Set<String>) {
@@ -308,6 +381,17 @@ class KtorCodegen : AbstractKotlinCodegen() {
 
     private fun Operation?.needFilterOperation(filterTagNameSet: Set<String>): Boolean {
         return this?.tags?.any(filterTagNameSet::contains) == true
+    }
+
+    private fun describeRequestBody(pathName: String, requestBody: RequestBody) {
+        val jsonContent: MediaType? = requestBody.content["application/json"]
+        if (jsonContent == null) return
+        val schema = jsonContent.schema
+        describeSchema(pathName, schema)
+    }
+
+    private fun describeSchema(pathName: String, schema: Schema<*>?) {
+        schema?.description = pathName
     }
 
     companion object {
