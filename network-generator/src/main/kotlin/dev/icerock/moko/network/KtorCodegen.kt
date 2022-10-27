@@ -146,12 +146,11 @@ class KtorCodegen : AbstractKotlinCodegen() {
         openAPI.paths.forEach { (pathName, path) ->
             path.readOperations().forEach {
                 it.responses?.forEach { (name, response) ->
-                    if (response.toString().contains("inline")) {
+                    if (response.toString().contains("inline_response")) {
                         response.content["application/json"]?.let {
                             val newName = camelize(pathName).replace("{", "").replace("}", "") + "InlineResponse"
                             val inline = it.schema.`$ref`.split("/").last()
                             inlineNameCache[inline] = newName
-                            //    it.schema.`$ref` = it.schema.`$ref`.replace(inline, newName)
                         }
                     }
                 }
@@ -289,15 +288,20 @@ class KtorCodegen : AbstractKotlinCodegen() {
 
     override fun fromResponse(responseCode: String?, response: ApiResponse?): CodegenResponse {
         val response = super.fromResponse(responseCode, response)
-        if (response.toString().contains("inline")) {
-            if (response.baseType in inlineNameCache.keys.map(::camelize)) {
-                response.baseType = inlineNameCache.map { camelize(it.key) to it.value }.toMap()[response.baseType]
-                response.dataType = response.baseType
-                val schema = response.schema as Schema<*>
-                val inline = schema.`$ref`.split("/").last()
-                schema.`$ref` = schema.`$ref`.replace(inline, response.baseType)
+        val schema = response.schema as Schema<*>
+        if (schema?.`$ref` != null && schema?.`$ref`?.contains("inline_response") == true) {
+            val inline = schema.`$ref`.split("/").last()
+
+            inlineNameCache[inline]?.let { newType ->
+                response.baseType = newType
+                response.dataType = newType
+                schema.`$ref` = schema.`$ref`.replace(inline, newType)
+
+                println("new $inline schema $schema")
             }
         }
+
+
         return response
     }
 

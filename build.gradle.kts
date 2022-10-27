@@ -6,6 +6,7 @@ import org.gradle.api.internal.artifacts.DefaultModuleVersionSelector
 buildscript {
     repositories {
         mavenCentral()
+        mavenLocal()
         google()
         gradlePluginPortal()
     }

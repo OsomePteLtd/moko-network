@@ -11,6 +11,7 @@ plugins {
 buildscript {
     repositories {
         mavenCentral()
+        mavenLocal()
         google()
         gradlePluginPortal()
     }
@@ -31,6 +32,7 @@ version = libs.versions.mokoNetworkVersion.get()
 
 dependencies {
     implementation(gradleKotlinDsl())
+    api(fileTree("libs"))
     compileOnly(libs.kotlinGradlePlugin)
     implementation(libs.guava)
     implementation(libs.openApiGenerator)
