@@ -7,7 +7,7 @@ glideVersion = "4.12.0"
 androidAppCompatVersion = "1.3.0"
 
 # jvm
-openApiGeneratorVersion = "5.2.0.3-osome"
+openApiGeneratorVersion = "5.2.0.1-osome"
 guavaVersion = "30.1-jre"
 
 # kotlinx
@@ -19,7 +19,7 @@ mokoResourcesVersion = "0.18.0"
 mokoMvvmVersion = "0.12.0"
 mokoErrorsVersion = "0.6.0"
 mokoTestVersion = "0.6.1"
-mokoNetworkVersion = "0.18.2.146-osome"
+mokoNetworkVersion = "0.18.2.155-osome"
 
 # tests
 espressoCoreVersion = "3.2.0"

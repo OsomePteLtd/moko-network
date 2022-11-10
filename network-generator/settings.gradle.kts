@@ -5,18 +5,32 @@ enableFeaturePreview("VERSION_CATALOGS")
 
 pluginManagement {
     repositories {
+
+
         mavenCentral()
-        mavenLocal()
         google()
         gradlePluginPortal()
+
+
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+
+        val githubUser = ""
+        val githubToken = ""
+
+        maven {
+            setUrl("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared")
+            credentials {
+                username = githubUser
+                password = githubToken
+            }
+        }
         mavenCentral()
         google()
-        mavenLocal()
+
     }
 
     versionCatalogs {

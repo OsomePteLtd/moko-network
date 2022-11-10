@@ -10,10 +10,21 @@ plugins {
 
 buildscript {
     repositories {
+
+        val githubUser = ""
+        val githubToken = ""
+
+        maven {
+            setUrl("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared")
+            credentials {
+                username = githubUser
+                password = githubToken
+            }
+        }
         mavenCentral()
-        mavenLocal()
         google()
         gradlePluginPortal()
+
     }
     dependencies {
         classpath(libs.kotlinGradlePlugin)
