@@ -94,14 +94,17 @@ pluginBundle {
     }
 }
 
+val githubUser = ""
+val githubToken = ""
+
 publishing {
     repositories {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared/")
             credentials {
-                username = ""
-                password = ""
+                username = githubUser
+                password = githubToken
             }
         }
     }

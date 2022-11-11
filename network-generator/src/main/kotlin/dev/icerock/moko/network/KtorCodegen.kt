@@ -144,17 +144,20 @@ class KtorCodegen : AbstractKotlinCodegen() {
             }
 
         openAPI.paths.forEach { (pathName, path) ->
-            path.readOperations().forEach {
-                it.responses?.forEach { (name, response) ->
-                    if (response.toString().contains("inline_response")) {
-                        response.content["application/json"]?.let {
-                            val newName = camelize(pathName).replace("{", "").replace("}", "") + "InlineResponse"
-                            val inline = it.schema.`$ref`.split("/").last()
-                            inlineNameCache[inline] = newName
+            path.readOperationsMap()
+                .forEach { method, operation ->
+                    operation.responses
+                        ?.forEach { name, response ->
+                            if (response.toString().contains("inline_response")) {
+                                response.content["application/json"]?.let {
+                                    val newName = method.name.lowercase().capitalized() + camelize(pathName).replace("{", "")
+                                        .replace("}", "") + "InlineResponse"
+                                    val inline = it.schema.`$ref`.split("/").last()
+                                    inlineNameCache[inline] = newName
+                                }
+                            }
                         }
-                    }
                 }
-            }
         }
 
         openAPI.components?.requestBodies?.forEach { (requestBodyName, requestBody) ->
@@ -227,6 +230,12 @@ class KtorCodegen : AbstractKotlinCodegen() {
                 items?.let(propertyProcess)
             }
             codegenOperation.vendorExtensions["x-successResponse"] = successResponse
+
+            if (
+                successResponse?.dataType?.contains("string", true) == true
+            ) {
+                codegenOperation.returnType = null
+            }
         }
 
         // fix query
@@ -296,8 +305,6 @@ class KtorCodegen : AbstractKotlinCodegen() {
                 response.baseType = newType
                 response.dataType = newType
                 schema.`$ref` = schema.`$ref`.replace(inline, newType)
-
-                println("new $inline schema $schema")
             }
         }
 
