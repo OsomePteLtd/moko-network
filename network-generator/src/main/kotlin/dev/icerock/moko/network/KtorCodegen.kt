@@ -38,6 +38,7 @@ class KtorCodegen : AbstractKotlinCodegen() {
 
         typeMapping["array"] = "kotlin.collections.List"
         typeMapping["number"] = "kotlin.Double"
+        typeMapping["integer"] = "kotlin.Long"
 
         typeMapping["date"] = "kotlin.String"
         typeMapping["date-time"] = "kotlin.String"

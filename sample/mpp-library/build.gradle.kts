@@ -47,7 +47,15 @@ multiplatformResources {
 }
 
 mokoNetwork {
-    spec("pets") {
+
+    spec("api") {
+        inputSpec = file("src/openapi.json")
+        packageName = "com.osome"
+        isInternal = false
+        isOpen = true
+    }
+
+/*    spec("pets") {
         inputSpec = file("src/swagger.json")
     }
     spec("profile") {
@@ -96,5 +104,5 @@ mokoNetwork {
     spec("requestHeader") {
         packageName = "openapi.requestHeader"
         inputSpec = file("src/requestHeaders.yaml")
-    }
+    }*/
 }

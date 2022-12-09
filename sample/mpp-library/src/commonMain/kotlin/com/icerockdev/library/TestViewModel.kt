@@ -61,7 +61,7 @@ class TestViewModel : ViewModel() {
         install(TokenFeature) {
             tokenHeaderName = "Authorization"
             tokenProvider = object : TokenFeature.TokenProvider {
-                override fun getToken(): String? = "ed155d0a445e4b4fbd878fe1f3bc1b7f"
+                override fun getToken(): String = "ed155d0a445e4b4fbd878fe1f3bc1b7f"
             }
         }
     }

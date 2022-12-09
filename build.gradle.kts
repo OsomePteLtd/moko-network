@@ -5,9 +5,8 @@ import org.gradle.api.internal.artifacts.DefaultModuleVersionSelector
 
 buildscript {
     repositories {
-
-        val githubUser = ""
-        val githubToken = ""
+        val githubUser = (findProperty("GITHUB_USER") as? String) ?: System.getenv("GITHUB_USER")
+        val githubToken = (findProperty("GITHUB_TOKEN") as? String) ?: System.getenv("GITHUB_TOKEN")
 
         maven {
             setUrl("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared")

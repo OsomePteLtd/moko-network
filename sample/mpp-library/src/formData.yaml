@@ -81,7 +81,7 @@ components:
           type: string
         timestamp:
           description: Response timestamp
-          type: number
+          type: integer
           format: int64
         success:
           description: Response status
@@ -104,7 +104,7 @@ components:
           type: string
         timestamp:
           description: Response timestamp
-          type: number
+          type: integer
           format: int64
         success:
           description: Response status

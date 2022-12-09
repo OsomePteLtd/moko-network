@@ -17,11 +17,10 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-
-        val githubUser = ""
-        val githubToken = ""
-
         maven {
+            val githubUser = System.getenv("GITHUB_USER")
+            val githubToken = System.getenv("GITHUB_TOKEN")
+
             setUrl("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared")
             credentials {
                 username = githubUser
