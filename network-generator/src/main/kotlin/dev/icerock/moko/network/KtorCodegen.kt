@@ -11,7 +11,6 @@ import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
-import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.servers.Server
@@ -151,7 +150,9 @@ class KtorCodegen : AbstractKotlinCodegen() {
                         ?.forEach { name, response ->
                             if (response.toString().contains("inline_response")) {
                                 response.content["application/json"]?.let {
-                                    val newName = method.name.lowercase().capitalized() + camelize(pathName).replace("{", "")
+                                    val newName = method.name.lowercase().capitalized() + camelize(
+                                        pathName
+                                    ).replace("{", "")
                                         .replace("}", "") + "InlineResponse"
                                     val inline = it.schema.`$ref`.split("/").last()
                                     inlineNameCache[inline] = newName
@@ -334,7 +335,8 @@ class KtorCodegen : AbstractKotlinCodegen() {
         }
 
         if (model.name.contains("inline_object")) {
-            val varsName = camelize(schema?.description).replace("{", "").replace("}", "") + "InlineObject"
+            val varsName =
+                camelize(schema?.description).replace("{", "").replace("}", "") + "InlineObject"
             inlineNameCache[model.name] = varsName
 
             model.name = varsName

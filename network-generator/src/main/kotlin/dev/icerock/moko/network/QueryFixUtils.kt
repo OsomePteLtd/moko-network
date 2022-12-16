@@ -21,27 +21,17 @@ fun CodegenOperation.parseNestedObjects(
     imports: Set<String?>?,
     openAPI: OpenAPI?
 ) {
-    var schema: Schema<*>? = schema
-    schema = getRefSchemaIfExists(schema, openAPI)
-    if (schema == null) {
+    var localSchema: Schema<*>? = schema
+    localSchema = getRefSchemaIfExists(localSchema, openAPI)
+    if (localSchema == null) {
         return
     }
 
-    val properties: Map<String, Schema<*>> = schema.properties
+    val properties: Map<String, Schema<*>> = localSchema.properties
     for (key in properties.keys) {
         var property: Schema<*>? = properties[key]
         property = getRefSchemaIfExists(property, openAPI)
 
-        val required = if (schema.required == null || schema.required.isEmpty()) {
-            false
-        } else {
-            schema.required.stream().anyMatch { propertyName ->
-                key.equals(
-                    propertyName.toString(),
-                    ignoreCase = true
-                )
-            }
-        }
         val parameterName = if (property is ArraySchema) {
             if (name == "...") String.format("%s[]", key) else String.format("%s[%s][]", name, key)
         } else {
@@ -54,7 +44,8 @@ fun CodegenOperation.parseNestedObjects(
 
         val queryParameter: Parameter = QueryParameter()
             .name(parameterName)
-            .required(required)
+            //.required(localSchema.isRequired(key))
+            .required(false) // here all query params made optional
             .schema(property)
 
         val codegenParameter = config.fromParameter(queryParameter, imports)
@@ -63,17 +54,30 @@ fun CodegenOperation.parseNestedObjects(
     }
 }
 
+private fun Schema<*>.isRequired(key: String): Boolean {
+    return if (required == null || required.isEmpty()) {
+        false
+    } else {
+        required.stream().anyMatch { propertyName ->
+            key.equals(
+                propertyName.toString(),
+                ignoreCase = true
+            )
+        }
+    }
+}
+
 fun CodegenOperation.addParameters(parameter: Parameter, codegenParameter: CodegenParameter) {
-    allParams.add(codegenParameter);
+    allParams.add(codegenParameter)
 
     if (parameter is QueryParameter || "query".equals(parameter.getIn(), true)) {
-        queryParams.add(codegenParameter.copy());
+        queryParams.add(codegenParameter.copy())
     } else if (parameter is PathParameter || "path".equals(parameter.getIn(), true)) {
-        pathParams.add(codegenParameter.copy());
+        pathParams.add(codegenParameter.copy())
     } else if (parameter is HeaderParameter || "header".equals(parameter.getIn(), true)) {
-        headerParams.add(codegenParameter.copy());
+        headerParams.add(codegenParameter.copy())
     } else if (parameter is CookieParameter || "cookie".equals(parameter.getIn(), true)) {
-        cookieParams.add(codegenParameter.copy());
+        cookieParams.add(codegenParameter.copy())
     }
     if (codegenParameter.required) {
         requiredParams.add(codegenParameter.copy());

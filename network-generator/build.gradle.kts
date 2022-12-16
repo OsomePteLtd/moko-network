@@ -14,6 +14,10 @@ buildscript {
         val githubUser = (findProperty("GITHUB_USER") as? String) ?: System.getenv("GITHUB_USER")
         val githubToken = (findProperty("GITHUB_TOKEN") as? String) ?: System.getenv("GITHUB_TOKEN")
 
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+
         maven {
             setUrl("https://maven.pkg.github.com/OsomePteLtd/kmp-mobile-shared")
             credentials {
@@ -21,9 +25,6 @@ buildscript {
                 password = githubToken
             }
         }
-        mavenCentral()
-        google()
-        gradlePluginPortal()
 
     }
     dependencies {
