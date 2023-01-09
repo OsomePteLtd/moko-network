@@ -67,7 +67,11 @@ import io.ktor.http.content.TextContent
             with(parameters) {
                 {{#queryParams}}
                 {{#isContainer}}
-                {{paramName}}?.let { appendAll("{{baseName}}", it.map { it.toString() }) }
+                {{paramName}}?.let {
+                    if (it.isNotEmpty()) {
+                        appendAll("{{baseName}}", it.map { it.toString() })
+                    }
+                }
                 {{/isContainer}}
                 {{^isContainer}}
                 {{paramName}}?.let { append("{{baseName}}", it.toString()) }
