@@ -20,12 +20,20 @@ import kotlinx.serialization.encoding.Encoder
 
     override fun toString() = raw()
     fun raw() = this::class.java.getField(name).getAnnotation(SerialName::class.java)?.value.orEmpty()
+
+    companion object {
+        private val revLookup by lazy {values().associateBy { it.serialName } }
+
+        fun fromRaw(raw: String): {{classname}} {
+            return revLookup.getOrElse(raw) { UNKNOWN_VALUE }
+        }
+    }
 }
 
 val {{classname}}.serialName: String
     get() = this::class.java.getField(this.name).getAnnotation(SerialName::class.java)!!.value
 
-{{#nonPublicApi}}internal {{/nonPublicApi}}object {{classname}}Serializer:KSerializer<{{classname}}> {
+{{#nonPublicApi}}internal {{/nonPublicApi}}object {{classname}}Serializer : KSerializer<{{classname}}> {
     private val className = this::class.qualifiedName!!
     private val lookup = {{classname}}.values().associateBy({ it }, { it.serialName })
     private val revLookup = {{classname}}.values().associateBy { it.serialName }
